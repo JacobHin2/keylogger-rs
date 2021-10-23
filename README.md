@@ -1,5 +1,5 @@
 # keylogger-rs -- Simple Linux + Windows Keylogger
-## Spent so long over-engineering this however it doesn't log to anywhere
+## Spent so long over-engineering this but it doesn't log to anywhere
 
 I was planning to have the typed words be sent to a remote server, but you can implement that yourself if you'd like!
 
