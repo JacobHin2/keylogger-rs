@@ -1,3 +1,4 @@
+#[cfg(feature = "window_titles")]
 pub mod title {
     pub fn get_window_name() -> String {
         window_title()

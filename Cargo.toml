@@ -11,12 +11,15 @@ default-run = "keylogger"
 name = "server"
 path = "./src/server.rs"
 
+[features]
+window_titles = ["winapi"]
 
 [dependencies]
 rdev = "0.5.1"
 serde_json = "1.0.68"
 serde = {version = "1.0.130", features = ["derive"] }
-winapi = { features = ["winuser", "consoleapi"], version = "0.3.9" }
+winapi = { features = ["winuser", "consoleapi"], version = "0.3.9", optional = true }
+
 reqwest = "0.11.4"
 warp = "0.3.1"
 tokio = { version = "1", features = ["full"] }
